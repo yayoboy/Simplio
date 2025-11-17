@@ -11,7 +11,7 @@ class UpdateSiteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,14 @@ class UpdateSiteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['sometimes', 'string', 'max:255'],
+            'slug' => ['sometimes', 'string', 'max:255', 'unique:sites,slug,' . $this->route('site')->id],
+            'description' => ['nullable', 'string'],
+            'theme_id' => ['nullable', 'exists:themes,id'],
+            'domain' => ['nullable', 'string', 'max:255'],
+            'settings' => ['nullable', 'array'],
+            'meta' => ['nullable', 'array'],
+            'is_published' => ['sometimes', 'boolean'],
         ];
     }
 }

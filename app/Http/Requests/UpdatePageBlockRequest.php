@@ -11,7 +11,7 @@ class UpdatePageBlockRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,14 @@ class UpdatePageBlockRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'type' => ['sometimes', 'string', 'in:text,heading,image,gallery,video,html,button,divider,spacer,container,columns'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'content' => ['sometimes', 'array'],
+            'properties' => ['nullable', 'array'],
+            'position' => ['nullable', 'array'],
+            'order' => ['sometimes', 'integer', 'min:0'],
+            'is_visible' => ['sometimes', 'boolean'],
+            'parent_id' => ['nullable', 'string'],
         ];
     }
 }

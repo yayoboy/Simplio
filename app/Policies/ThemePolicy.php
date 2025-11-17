@@ -13,7 +13,7 @@ class ThemePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class ThemePolicy
      */
     public function view(User $user, Theme $theme): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -29,7 +29,7 @@ class ThemePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -37,7 +37,8 @@ class ThemePolicy
      */
     public function update(User $user, Theme $theme): bool
     {
-        return false;
+        // Can update if it's their theme or if they're editing a global theme
+        return !$theme->is_global && $theme->created_by === $user->id;
     }
 
     /**
@@ -45,7 +46,8 @@ class ThemePolicy
      */
     public function delete(User $user, Theme $theme): bool
     {
-        return false;
+        // Cannot delete global themes, only custom ones
+        return !$theme->is_global && $theme->created_by === $user->id;
     }
 
     /**
@@ -53,7 +55,7 @@ class ThemePolicy
      */
     public function restore(User $user, Theme $theme): bool
     {
-        return false;
+        return !$theme->is_global && $theme->created_by === $user->id;
     }
 
     /**
@@ -61,6 +63,6 @@ class ThemePolicy
      */
     public function forceDelete(User $user, Theme $theme): bool
     {
-        return false;
+        return !$theme->is_global && $theme->created_by === $user->id;
     }
 }
