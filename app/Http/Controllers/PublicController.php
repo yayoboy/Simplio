@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Site;
 use App\Models\Page;
+use App\Services\PageCacheService;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Http\Response;
 
 class PublicController extends Controller
 {
+    public function __construct(
+        protected PageCacheService $cacheService
+    ) {
+    }
+
     /**
      * Show site home page
      */
-    public function showSite(string $siteSlug): View
+    public function showSite(string $siteSlug): Response
     {
         $site = Site::where('slug', $siteSlug)
             ->where('is_published', true)
@@ -28,13 +34,13 @@ class PublicController extends Controller
             abort(404, 'No home page found for this site');
         }
 
-        return $this->renderPage($site, $page);
+        return $this->renderPageWithCache($site, $page, true);
     }
 
     /**
      * Show specific page
      */
-    public function showPage(string $siteSlug, string $pageSlug): View
+    public function showPage(string $siteSlug, string $pageSlug): Response
     {
         $site = Site::where('slug', $siteSlug)
             ->where('is_published', true)
@@ -46,17 +52,48 @@ class PublicController extends Controller
             ->where('is_published', true)
             ->firstOrFail();
 
-        return $this->renderPage($site, $page);
+        return $this->renderPageWithCache($site, $page, false);
+    }
+
+    /**
+     * Render page with caching
+     */
+    protected function renderPageWithCache(Site $site, Page $page, bool $isHome): Response
+    {
+        $cacheKey = $isHome
+            ? $this->cacheService->getSiteHomeCacheKey($site)
+            : $this->cacheService->getPageCacheKey($site, $page);
+
+        // Try to get from cache
+        $cachedHtml = $this->cacheService->getCachedPage($cacheKey);
+
+        if ($cachedHtml !== null) {
+            return response($cachedHtml)
+                ->header('X-Cache', 'HIT')
+                ->header('Content-Type', 'text/html; charset=UTF-8');
+        }
+
+        // Cache miss - render the page
+        $html = $this->renderPage($site, $page);
+
+        // Cache the rendered HTML
+        $this->cacheService->cachePage($cacheKey, $html);
+
+        return response($html)
+            ->header('X-Cache', 'MISS')
+            ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
     /**
      * Render page with theme and blocks
      */
-    protected function renderPage(Site $site, Page $page): View
+    protected function renderPage(Site $site, Page $page): string
     {
-        // Load blocks ordered by position
+        // Load blocks ordered by position (only root blocks with children)
         $blocks = $page->blocks()
+            ->whereNull('parent_id')
             ->where('is_visible', true)
+            ->with('children')
             ->ordered()
             ->get();
 
@@ -69,6 +106,6 @@ class PublicController extends Controller
             'blocks' => $blocks,
             'theme' => $site->theme,
             'themeCss' => $themeCss,
-        ]);
+        ])->render();
     }
 }
