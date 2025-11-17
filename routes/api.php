@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('sites/{site}/publish', [SiteController::class, 'publish']);
     Route::post('sites/{site}/unpublish', [SiteController::class, 'unpublish']);
     Route::post('sites/{site}/duplicate', [SiteController::class, 'duplicate']);
+    Route::post('sites/{site}/theme', [SiteController::class, 'updateTheme']);
 
     // Pages
     Route::apiResource('sites.pages', PageController::class);

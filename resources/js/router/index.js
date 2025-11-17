@@ -44,6 +44,11 @@ const routes = [
         name: 'media-library',
         component: () => import('../views/media/MediaLibrary.vue'),
       },
+      {
+        path: 'sites/:siteId/theme',
+        name: 'theme-editor',
+        component: () => import('../views/themes/ThemeEditor.vue'),
+      },
     ],
   },
 ];

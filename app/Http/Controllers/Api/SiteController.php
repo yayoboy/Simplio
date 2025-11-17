@@ -115,4 +115,36 @@ class SiteController extends Controller
 
         return response()->json($newSite, 201);
     }
+
+    /**
+     * Update or create theme for the site.
+     */
+    public function updateTheme(Request $request, Site $site): JsonResponse
+    {
+        $this->authorize('update', $site);
+
+        $request->validate([
+            'design_tokens' => 'required|array',
+        ]);
+
+        // Get or create theme for this site
+        $theme = $site->theme;
+
+        if (!$theme) {
+            $theme = $site->theme()->create([
+                'name' => $site->name . ' Theme',
+                'design_tokens' => $request->input('design_tokens'),
+                'is_global' => false,
+            ]);
+        } else {
+            $theme->update([
+                'design_tokens' => $request->input('design_tokens'),
+            ]);
+        }
+
+        return response()->json([
+            'data' => $theme,
+            'message' => 'Theme updated successfully',
+        ]);
+    }
 }

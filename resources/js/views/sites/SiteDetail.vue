@@ -22,6 +22,15 @@
           </svg>
           Media Library
         </button>
+        <button
+          @click="goToThemeEditor"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+          Customize Theme
+        </button>
       </div>
 
       <!-- Pages Section -->
@@ -382,6 +391,15 @@ function openBuilder(page) {
 function goToMediaLibrary() {
   router.push({
     name: 'media-library',
+    params: {
+      siteId: siteId.value
+    }
+  });
+}
+
+function goToThemeEditor() {
+  router.push({
+    name: 'theme-editor',
     params: {
       siteId: siteId.value
     }
