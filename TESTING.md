@@ -1,0 +1,560 @@
+# Simplio CMS - Testing Guide
+
+## Setup for Testing
+
+```bash
+# 1. Install dependencies
+composer install
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# 3. Setup database (use SQLite for quick testing)
+# In .env, set:
+# DB_CONNECTION=sqlite
+
+touch database/database.sqlite
+
+# 4. Run migrations and seeders
+php artisan migrate:fresh --seed
+
+# 5. Start development servers (2 terminals)
+# Terminal 1:
+npm run dev
+
+# Terminal 2:
+php artisan serve
+```
+
+## Test Credentials
+
+**Default Test User:**
+- Email: `test@example.com`
+- Password: `password`
+
+**Seeded Themes:**
+1. Modern Light (ID: 1)
+2. Dark Mode (ID: 2)
+3. Minimal (ID: 3)
+
+---
+
+## ✅ Test Checklist
+
+### 1. Authentication Tests
+
+#### Register New User
+- [ ] Navigate to `/register`
+- [ ] Enter name, email, password (min 8 chars), confirm password
+- [ ] Click "Sign up"
+- [ ] Should redirect to dashboard
+- [ ] Token should be stored in localStorage
+
+**Expected:** User created, auto-logged in, token saved
+
+#### Login
+- [ ] Navigate to `/login`
+- [ ] Enter test@example.com / password
+- [ ] Click "Sign in"
+- [ ] Should redirect to dashboard
+
+**Expected:** Successful login, redirect to dashboard
+
+#### Logout
+- [ ] Click "Logout" in navigation
+- [ ] Should redirect to `/login`
+- [ ] Token should be removed from localStorage
+
+**Expected:** Logged out, cannot access protected routes
+
+#### Protected Routes
+- [ ] Try accessing `/` without token
+- [ ] Try accessing `/sites` without token
+
+**Expected:** Redirected to `/login`
+
+---
+
+### 2. Sites CRUD Tests
+
+#### Create Site
+- [ ] Login and navigate to `/sites`
+- [ ] Click "Create Site" button
+- [ ] Modal opens with form
+- [ ] Fill in:
+  - Name: "Test Site"
+  - Slug: "test-site" (or leave empty for auto-generation)
+  - Description: "My test website"
+  - Domain: "test.example.com"
+  - Theme: Select "Modern Light"
+- [ ] Click "Create"
+- [ ] Modal closes
+- [ ] New site appears in grid
+
+**Expected:** Site created successfully, appears in list
+
+**API Call:** `POST /api/sites`
+```json
+{
+  "name": "Test Site",
+  "slug": "test-site",
+  "description": "My test website",
+  "domain": "test.example.com",
+  "theme_id": 1
+}
+```
+
+#### View Sites List
+- [ ] Navigate to `/sites`
+- [ ] Sites displayed in grid (3 columns on large screens)
+- [ ] Each card shows:
+  - Site name
+  - Description
+  - Page count
+  - Published status badge (Draft/Published)
+  - Edit icon
+  - Delete icon
+  - Manage link
+  - Publish/Unpublish button
+  - Duplicate button
+
+**Expected:** All sites displayed with correct information
+
+**API Call:** `GET /api/sites`
+
+#### Edit Site
+- [ ] Click edit icon (pencil) on a site card
+- [ ] Modal opens with form pre-filled
+- [ ] Change name to "Updated Test Site"
+- [ ] Change description
+- [ ] Click "Update"
+- [ ] Modal closes
+- [ ] Changes reflect in card immediately
+
+**Expected:** Site updated, UI refreshed
+
+**API Call:** `PUT /api/sites/{id}`
+
+#### Delete Site
+- [ ] Click delete icon (trash) on a site card
+- [ ] Confirmation modal opens
+- [ ] Displays site name and warning
+- [ ] Click "Delete"
+- [ ] Modal closes
+- [ ] Site removed from grid
+
+**Expected:** Site deleted, removed from list
+
+**API Call:** `DELETE /api/sites/{id}`
+
+#### Publish/Unpublish Site
+- [ ] Find a site with "Draft" status
+- [ ] Click "Publish" button
+- [ ] Status badge changes to "Published" (green)
+- [ ] Button text changes to "Unpublish"
+- [ ] Click "Unpublish"
+- [ ] Status changes back to "Draft" (gray)
+
+**Expected:** Toggle works, status updates immediately
+
+**API Calls:**
+- `POST /api/sites/{id}/publish`
+- `POST /api/sites/{id}/unpublish`
+
+#### Duplicate Site
+- [ ] Click "Duplicate" button on a site
+- [ ] Modal opens with name input
+- [ ] Default name is "{Site Name} (Copy)"
+- [ ] Change name if desired
+- [ ] Click "Duplicate"
+- [ ] Modal closes
+- [ ] New site appears at top of list
+- [ ] Has all same properties except name
+
+**Expected:** Site duplicated with new name
+
+**API Call:** `POST /api/sites/{id}/duplicate`
+```json
+{
+  "name": "Test Site (Copy)"
+}
+```
+
+#### Empty State
+- [ ] Delete all sites
+- [ ] Empty state message appears
+- [ ] "Create Your First Site" button visible
+- [ ] Clicking button opens create modal
+
+**Expected:** Proper empty state UI
+
+---
+
+### 3. Site Detail View Tests
+
+#### Navigate to Site Detail
+- [ ] Click "Manage →" link on a site card
+- [ ] Redirects to `/sites/{id}`
+- [ ] Shows site name and description
+- [ ] Shows "Pages" section
+
+**Expected:** Site detail page loads
+
+**API Call:** `GET /api/sites/{id}`
+
+---
+
+### 4. Pages CRUD Tests
+
+#### Create Page
+- [ ] Navigate to a site detail page (`/sites/{id}`)
+- [ ] Click "Create Page" button
+- [ ] Modal opens with form
+- [ ] Fill in:
+  - Title: "About Us" (required)
+  - Slug: "about-us" (or leave empty for auto-generation)
+  - SEO Title: "About Us - Company Name"
+  - SEO Description: "Learn more about our company"
+  - Is Home: Check if you want this as home page
+- [ ] Click "Create"
+- [ ] Modal closes
+- [ ] New page appears in table
+
+**Expected:** Page created successfully, appears in list
+
+**API Call:** `POST /api/sites/{siteId}/pages`
+```json
+{
+  "title": "About Us",
+  "slug": "about-us",
+  "meta_title": "About Us - Company Name",
+  "meta_description": "Learn more about our company",
+  "is_home": false
+}
+```
+
+#### View Pages List
+- [ ] Navigate to a site detail page
+- [ ] Pages displayed in table
+- [ ] Each row shows:
+  - Page title
+  - Slug
+  - Published status badge (Draft/Published)
+  - Home page indicator (if is_home)
+  - Set as Home icon (if not home)
+  - Publish/Unpublish button
+  - Edit icon
+  - Duplicate icon
+  - Delete icon
+
+**Expected:** All pages displayed with correct information
+
+**API Call:** `GET /api/sites/{siteId}/pages`
+
+#### Edit Page
+- [ ] Click edit icon (pencil) on a page row
+- [ ] Modal opens with form pre-filled
+- [ ] Change title to "Updated About Us"
+- [ ] Change SEO fields
+- [ ] Click "Update"
+- [ ] Modal closes
+- [ ] Changes reflect in table immediately
+
+**Expected:** Page updated, UI refreshed
+
+**API Call:** `PUT /api/pages/{id}`
+
+#### Delete Page
+- [ ] Click delete icon (trash) on a page row
+- [ ] Confirmation modal opens
+- [ ] Displays page title and warning
+- [ ] Click "Delete"
+- [ ] Modal closes
+- [ ] Page removed from table
+
+**Expected:** Page deleted, removed from list
+
+**API Call:** `DELETE /api/pages/{id}`
+
+#### Publish/Unpublish Page
+- [ ] Find a page with "Draft" status
+- [ ] Click "Publish" button
+- [ ] Status badge changes to "Published" (green)
+- [ ] Button text changes to "Unpublish"
+- [ ] Click "Unpublish"
+- [ ] Status changes back to "Draft" (gray)
+
+**Expected:** Toggle works, status updates immediately
+
+**API Calls:**
+- `POST /api/pages/{id}/publish`
+- `POST /api/pages/{id}/unpublish`
+
+#### Duplicate Page
+- [ ] Click "Duplicate" icon on a page
+- [ ] Modal opens with title input
+- [ ] Default title is "{Page Title} (Copy)"
+- [ ] Change title if desired
+- [ ] Click "Duplicate"
+- [ ] Modal closes
+- [ ] New page appears at top of table
+- [ ] Has all same properties except title and is not published
+
+**Expected:** Page duplicated with new title
+
+**API Call:** `POST /api/pages/{id}/duplicate`
+```json
+{
+  "title": "About Us (Copy)"
+}
+```
+
+#### Set as Home Page
+- [ ] Find a page that is not the home page
+- [ ] Click the "Set as Home" icon (house)
+- [ ] Page immediately shows "Home Page" badge
+- [ ] Previous home page loses its badge
+- [ ] Only one page shows as home
+
+**Expected:** Home page changed, only one home page exists
+
+**API Call:** `POST /api/pages/{id}/set-home`
+
+#### Empty State
+- [ ] Delete all pages from a site (or use site with no pages)
+- [ ] Empty state message appears
+- [ ] "Create Your First Page" button visible
+- [ ] Clicking button opens create modal
+
+**Expected:** Proper empty state UI
+
+---
+
+### 5. Dashboard Tests
+
+#### View Dashboard
+- [ ] Navigate to `/`
+- [ ] Shows statistics cards (Total Sites, Published Sites, Total Pages)
+- [ ] Shows "Quick Actions" section
+- [ ] All values display correctly (initially 0)
+
+**Expected:** Dashboard displays with stats
+
+#### Quick Actions
+- [ ] Click "Create New Site" in Quick Actions
+- [ ] Should navigate to `/sites`
+
+**Expected:** Navigation works
+
+---
+
+### 6. UI/UX Tests
+
+#### Responsive Design
+- [ ] Test on mobile viewport (375px)
+- [ ] Test on tablet viewport (768px)
+- [ ] Test on desktop viewport (1024px+)
+- [ ] Grid should be 1 column on mobile, 2 on tablet, 3 on desktop
+
+**Expected:** Responsive layout works
+
+#### Loading States
+- [ ] Refresh `/sites` page
+- [ ] Should show "Loading..." message briefly
+- [ ] Then show sites grid
+
+**Expected:** Loading state visible during fetch
+
+#### Form Validation
+- [ ] Try creating site without name
+- [ ] Should not submit
+- [ ] Browser validation error appears
+
+**Expected:** Required field validation works
+
+#### Error Handling
+- [ ] Stop backend server
+- [ ] Try creating a site
+- [ ] Error message should appear
+
+**Expected:** Error displayed to user
+
+#### Modal Interactions
+- [ ] Open create modal
+- [ ] Click backdrop (outside modal)
+- [ ] Modal should close
+- [ ] Click "Cancel" button
+- [ ] Modal should close
+- [ ] Press Escape key (if implemented)
+
+**Expected:** Modal closes on cancel/backdrop click
+
+---
+
+### 7. State Management Tests
+
+#### Pinia Stores
+- [ ] Open Vue DevTools
+- [ ] Navigate to Pinia tab
+- [ ] Check `sites` store
+- [ ] Should show:
+  - `sites` array
+  - `currentSite` object
+  - `loading` boolean
+  - `error` string
+- [ ] Check `pages` store
+- [ ] Should show:
+  - `pages` array
+  - `currentPage` object
+  - `loading` boolean
+  - `error` string
+
+**Expected:** Store state visible in DevTools
+
+#### Sites Store Actions
+- [ ] Create a site
+- [ ] Check Pinia DevTools
+- [ ] `sites` array should update
+- [ ] Edit a site
+- [ ] Specific site object should update
+- [ ] Delete a site
+- [ ] Should be removed from array
+
+**Expected:** Store updates reactively
+
+#### Pages Store Actions
+- [ ] Create a page
+- [ ] Check Pinia DevTools
+- [ ] `pages` array should update
+- [ ] Edit a page
+- [ ] Specific page object should update
+- [ ] Delete a page
+- [ ] Should be removed from array
+- [ ] Set a page as home
+- [ ] Page `is_home` property should update
+- [ ] Other pages should have `is_home` set to false
+
+**Expected:** Store updates reactively
+
+---
+
+### 8. API Integration Tests
+
+#### Check Network Calls
+- [ ] Open Browser DevTools Network tab
+- [ ] Perform CRUD operations on Sites
+- [ ] Verify correct API calls:
+  - GET /api/sites (on sites page load)
+  - POST /api/sites (create site)
+  - PUT /api/sites/{id} (update site)
+  - DELETE /api/sites/{id} (delete site)
+  - POST /api/sites/{id}/publish
+  - POST /api/sites/{id}/unpublish
+  - POST /api/sites/{id}/duplicate
+- [ ] Perform CRUD operations on Pages
+- [ ] Verify correct API calls:
+  - GET /api/sites/{siteId}/pages (on site detail load)
+  - POST /api/sites/{siteId}/pages (create page)
+  - PUT /api/pages/{id} (update page)
+  - DELETE /api/pages/{id} (delete page)
+  - POST /api/pages/{id}/publish
+  - POST /api/pages/{id}/unpublish
+  - POST /api/pages/{id}/duplicate
+  - POST /api/pages/{id}/set-home
+
+**Expected:** All API calls return 200/201/204 status
+
+#### Authentication Headers
+- [ ] Check network request headers
+- [ ] Should include: `Authorization: Bearer {token}`
+- [ ] Token should match localStorage
+
+**Expected:** Auth token sent with requests
+
+#### Response Handling
+- [ ] Check API responses
+- [ ] Should return proper JSON
+- [ ] Site objects should have: id, name, slug, description, theme, etc.
+
+**Expected:** Proper response format
+
+---
+
+## 🐛 Common Issues & Solutions
+
+### Issue: Sites don't load
+**Solution:** Check if migrations ran, check browser console for errors
+
+### Issue: "Token not found" error
+**Solution:** Login again, token may have expired or been cleared
+
+### Issue: Theme dropdown empty
+**Solution:** Run `php artisan db:seed --class=ThemeSeeder`
+
+### Issue: Modal doesn't close
+**Solution:** Check browser console, may be JavaScript error
+
+### Issue: Changes don't reflect
+**Solution:** Check Network tab, ensure API calls succeed
+
+---
+
+## 📊 Expected Results Summary
+
+After completing all tests:
+
+✅ User can register and login
+✅ Protected routes work correctly
+✅ Can create sites with themes
+✅ Can edit existing sites
+✅ Can delete sites with confirmation
+✅ Can publish/unpublish sites
+✅ Can duplicate sites
+✅ Can create pages within sites
+✅ Can edit existing pages
+✅ Can delete pages with confirmation
+✅ Can publish/unpublish pages
+✅ Can duplicate pages
+✅ Can set page as home (only one home page per site)
+✅ UI updates reactively
+✅ Loading states work
+✅ Error handling works
+✅ Responsive design works
+✅ All API calls succeed
+✅ Pinia stores (sites & pages) update correctly
+
+---
+
+## 🚀 Next Features to Test (When Implemented)
+
+- [ ] Pages management (create, edit, delete pages)
+- [ ] Page builder (drag-and-drop blocks)
+- [ ] Media upload and management
+- [ ] Theme customization
+- [ ] Site preview
+- [ ] Multi-language support
+
+---
+
+## 📝 Notes for Developers
+
+- Use Vue DevTools for debugging component state
+- Check browser console for JavaScript errors
+- Monitor Network tab for API issues
+- Test both success and error scenarios
+- Test with different user roles (when implemented)
+- Test concurrent operations (multiple users)
+- Test with large datasets (100+ sites)
+
+---
+
+## 🔄 Continuous Testing
+
+After each new feature:
+1. Run through relevant test scenarios
+2. Check for regressions in existing features
+3. Update this document with new test cases
+4. Document any bugs found
+5. Verify fixes with re-testing
