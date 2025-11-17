@@ -34,7 +34,7 @@
       <aside class="w-64 bg-white border-r border-gray-200 overflow-y-auto">
         <div class="p-4">
           <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Blocks</h2>
-          <p class="text-sm text-gray-500">Block palette coming soon...</p>
+          <BlockPalette @add-block="handleAddBlock" />
         </div>
       </aside>
 
@@ -46,14 +46,21 @@
               <div class="text-gray-500">Loading blocks...</div>
             </div>
             <div v-else-if="!blocksStore.blocks.length" class="text-center py-20">
+              <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+              </svg>
               <h3 class="mt-4 text-lg font-medium text-gray-900">Start building your page</h3>
-              <p class="mt-2 text-sm text-gray-500">Blocks will appear here</p>
+              <p class="mt-2 text-sm text-gray-500">Click on blocks from the left sidebar to add them to your page</p>
             </div>
-            <div v-else>
-              <div v-for="block in blocksStore.blocks" :key="block.id" class="border rounded p-4 mb-4">
-                <strong>{{ block.type }}</strong>: {{ block.name }}
-              </div>
-            </div>
+            <BlockCanvas
+              v-else
+              :blocks="blocksStore.blocks"
+              :selected-block-id="blocksStore.selectedBlock?.id"
+              @select-block="handleSelectBlock"
+              @update-block="handleUpdateBlock"
+              @delete-block="handleDeleteBlock"
+              @reorder-blocks="handleReorderBlocks"
+            />
           </div>
         </div>
       </main>
@@ -61,8 +68,15 @@
       <!-- Properties Sidebar -->
       <aside v-if="blocksStore.selectedBlock" class="w-80 bg-white border-l border-gray-200 overflow-y-auto">
         <div class="p-4">
-          <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Properties</h2>
-          <p class="text-sm text-gray-500">Properties panel coming soon...</p>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Properties</h2>
+            <button @click="blocksStore.deselectBlock()" class="text-gray-400 hover:text-gray-600">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <BlockProperties :block="blocksStore.selectedBlock" @update="handleUpdateBlockProperties" />
         </div>
       </aside>
     </div>
@@ -70,11 +84,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useSitesStore } from '@/stores/sites';
 import { usePagesStore } from '@/stores/pages';
 import { useBlocksStore } from '@/stores/blocks';
+import { createBlockData } from '@/config/blockTypes';
+import BlockPalette from '@/components/builder/BlockPalette.vue';
+import BlockCanvas from '@/components/builder/BlockCanvas.vue';
+import BlockProperties from '@/components/builder/BlockProperties.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -109,10 +127,60 @@ async function loadData() {
   }
 }
 
+async function handleAddBlock(blockType) {
+  try {
+    const blockData = createBlockData(blockType);
+    const newBlock = await blocksStore.createBlock(pageId.value, blockData);
+    blocksStore.selectBlock(newBlock);
+    hasUnsavedChanges.value = true;
+  } catch (error) {
+    console.error('Failed to add block:', error);
+  }
+}
+
+function handleSelectBlock(block) {
+  blocksStore.selectBlock(block);
+}
+
+async function handleUpdateBlock(blockId, data) {
+  try {
+    await blocksStore.updateBlock(pageId.value, blockId, data);
+    hasUnsavedChanges.value = true;
+  } catch (error) {
+    console.error('Failed to update block:', error);
+  }
+}
+
+function handleUpdateBlockProperties(data) {
+  if (blocksStore.selectedBlock) {
+    handleUpdateBlock(blocksStore.selectedBlock.id, data);
+  }
+}
+
+async function handleDeleteBlock(blockId) {
+  try {
+    await blocksStore.deleteBlock(pageId.value, blockId);
+    hasUnsavedChanges.value = true;
+  } catch (error) {
+    console.error('Failed to delete block:', error);
+  }
+}
+
+async function handleReorderBlocks(blockIds) {
+  try {
+    await blocksStore.reorderBlocks(pageId.value, blockIds);
+    hasUnsavedChanges.value = true;
+  } catch (error) {
+    console.error('Failed to reorder blocks:', error);
+  }
+}
+
 async function saveChanges() {
   saving.value = true;
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // All changes are already saved via API calls
+    // This just marks the state as saved
+    await new Promise(resolve => setTimeout(resolve, 500));
     hasUnsavedChanges.value = false;
   } catch (error) {
     console.error('Failed to save changes:', error);
@@ -122,10 +190,28 @@ async function saveChanges() {
 }
 
 function goBack() {
+  if (hasUnsavedChanges.value) {
+    if (!confirm('You have unsaved changes. Are you sure you want to leave?')) {
+      return;
+    }
+  }
   router.push({ name: 'site-detail', params: { id: siteId.value } });
 }
 
+// Watch for block changes
+watch(() => blocksStore.blocks, () => {
+  hasUnsavedChanges.value = true;
+}, { deep: true });
+
 onMounted(() => {
   loadData();
+});
+
+// Warn before leaving with unsaved changes
+window.addEventListener('beforeunload', (e) => {
+  if (hasUnsavedChanges.value) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
 });
 </script>
