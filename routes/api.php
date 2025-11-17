@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\SiteController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\ThemeController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -46,4 +47,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // Themes
     Route::apiResource('themes', ThemeController::class);
     Route::get('themes/global', [ThemeController::class, 'global']);
+
+    // User Management (admin only)
+    Route::middleware('admin')->group(function () {
+        Route::get('users', [UserController::class, 'index']);
+        Route::post('users', [UserController::class, 'store']);
+        Route::get('users/roles', [UserController::class, 'roles']);
+        Route::get('users/{user}', [UserController::class, 'show']);
+        Route::put('users/{user}', [UserController::class, 'update']);
+        Route::delete('users/{user}', [UserController::class, 'destroy']);
+    });
 });

@@ -839,3 +839,194 @@ After each new feature:
 3. Update this document with new test cases
 4. Document any bugs found
 5. Verify fixes with re-testing
+
+---
+
+## 🤖 Automated Testing & CI/CD
+
+### Running PHPUnit Tests
+
+Simplio CMS includes comprehensive automated tests for backend functionality.
+
+#### Setup Test Environment
+
+```bash
+# Copy test environment file
+cp .env.testing.example .env.testing
+
+# Generate application key for testing
+php artisan key:generate --env=testing
+
+# Run migrations for test database
+php artisan migrate --env=testing
+```
+
+#### Running Tests
+
+```bash
+# Run all tests
+php artisan test
+
+# Run tests in parallel (faster)
+php artisan test --parallel
+
+# Run specific test suite
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Run specific test file
+php artisan test tests/Feature/UserManagementTest.php
+
+# Run specific test method
+php artisan test --filter test_admin_can_create_user
+
+# Run with coverage report
+php artisan test --coverage
+```
+
+### Test Coverage
+
+#### Feature Tests (tests/Feature/)
+
+1. **AuthTest.php** - Authentication endpoints
+   - User registration
+   - User login/logout
+   - Token validation
+   - Protected routes access
+   - Profile retrieval
+
+2. **UserManagementTest.php** - User CRUD operations (Admin only)
+   - List users with pagination
+   - Create users with roles
+   - Update user information
+   - Delete users (with self-deletion protection)
+   - Search and filter users
+   - Role management
+   - Permission checks
+
+3. **SiteManagementTest.php** - Site CRUD operations
+   - List sites
+   - Create/update/delete sites
+   - Publish/unpublish sites
+   - Slug uniqueness validation
+   - Authorization checks
+
+#### Unit Tests (tests/Unit/)
+
+1. **UserModelTest.php** - User model methods
+   - isAdmin() role check
+   - isEditor() role check
+   - canManageUsers() permission
+   - canManageSites() permission
+   - Role constants validation
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for automated testing and deployment.
+
+#### Workflow Triggers
+
+- Push to `main`, `develop`, or `claude/**` branches
+- Pull requests to `main` or `develop`
+
+#### Pipeline Stages
+
+1. **Backend Tests** (PHP 8.4 + MySQL 8.0)
+   - Checkout code
+   - Install PHP dependencies
+   - Run database migrations
+   - Execute PHPUnit tests in parallel
+
+2. **Frontend Build** (Node.js 20)
+   - Checkout code
+   - Install npm dependencies
+   - Run linter (if configured)
+   - Build production assets
+   - Upload build artifacts
+
+3. **Code Quality Checks** (Optional)
+   - PHPStan static analysis
+   - PHP CS Fixer code style
+
+4. **Security Checks** (Optional)
+   - Composer audit for vulnerabilities
+   - npm audit for dependencies
+
+5. **Deploy** (Production only)
+   - Triggers on push to `main`
+   - Requires all tests to pass
+   - Ready for deployment configuration
+
+#### View Build Status
+
+Check the Actions tab in GitHub to see:
+- ✅ Test results
+- ⏱️ Build time
+- 📊 Test coverage
+- 🔒 Security scan results
+
+### Writing New Tests
+
+#### Feature Test Example
+
+```php
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class MyFeatureTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_feature_works(): void
+    {
+        // Arrange: Create test data
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        // Act: Perform action
+        $response = $this->postJson('/api/endpoint', ['data' => 'value']);
+
+        // Assert: Verify results
+        $response->assertStatus(201)
+            ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('table', ['column' => 'value']);
+    }
+}
+```
+
+#### Unit Test Example
+
+```php
+class MyUnitTest extends TestCase
+{
+    public function test_method_returns_expected_value(): void
+    {
+        $model = new Model(['attribute' => 'value']);
+
+        $result = $model->someMethod();
+
+        $this->assertEquals('expected', $result);
+    }
+}
+```
+
+### Best Practices
+
+1. **Use RefreshDatabase** - Ensures clean state for each test
+2. **Test Authentication** - Use `Sanctum::actingAs()` for authenticated requests
+3. **Test Permissions** - Verify admin-only endpoints reject non-admins
+4. **Test Validation** - Ensure invalid data returns 422 with errors
+5. **Test Edge Cases** - Check boundary conditions and error states
+6. **Keep Tests Fast** - Use factories, avoid unnecessary DB calls
+7. **Descriptive Names** - Test names should describe what they test
+
+### Continuous Integration Benefits
+
+- ✅ Catch bugs before they reach production
+- ✅ Prevent regressions when adding features
+- ✅ Ensure code quality standards
+- ✅ Verify compatibility across environments
+- ✅ Automate deployment process
+- ✅ Build confidence in releases

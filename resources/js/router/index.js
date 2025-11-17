@@ -49,6 +49,12 @@ const routes = [
         name: 'theme-editor',
         component: () => import('../views/themes/ThemeEditor.vue'),
       },
+      {
+        path: 'users',
+        name: 'users',
+        component: () => import('../views/users/UsersList.vue'),
+        meta: { requiresAdmin: true },
+      },
     ],
   },
 ];
@@ -67,6 +73,14 @@ router.beforeEach((to, from, next) => {
     next({ name: 'login' });
   } else if (to.meta.guest && isAuthenticated) {
     next({ name: 'dashboard' });
+  } else if (to.meta.requiresAdmin) {
+    // Check if user is admin
+    if (authStore.user?.role === 'admin') {
+      next();
+    } else {
+      // Redirect non-admin users to dashboard
+      next({ name: 'dashboard' });
+    }
   } else {
     next();
   }
