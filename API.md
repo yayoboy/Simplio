@@ -46,14 +46,91 @@ php artisan serve
 
 ## Authentication
 
-All API endpoints require authentication using Laravel Sanctum.
+All protected API endpoints require authentication using Laravel Sanctum.
 
-### Register/Login
-You need to implement authentication endpoints or use the test user created by seeder:
+### Register
+```http
+POST /api/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "password_confirmation": "password123"
+}
+```
+
+Response:
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "token": "1|xxxxxxxxxxxxxxxxxxx"
+}
+```
+
+### Login
+```http
+POST /api/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+Response:
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "token": "2|xxxxxxxxxxxxxxxxxxx"
+}
+```
+
+### Logout
+```http
+POST /api/logout
+Authorization: Bearer {token}
+```
+
+Response:
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+### Get Authenticated User
+```http
+GET /api/me
+Authorization: Bearer {token}
+```
+
+Response:
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+### Test User
+Use the test user created by seeder:
 - Email: `test@example.com`
 - Password: `password`
 
-Include the auth token in all requests:
+### Using Token
+Include the auth token in all protected requests:
 ```
 Authorization: Bearer {token}
 ```
