@@ -1,59 +1,169 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Simplio CMS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Un Content Management System moderno con page builder drag-and-drop, costruito con Laravel 12 e Vue 3.
 
-## About Laravel
+## Caratteristiche
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Page Builder Visuale** - Interfaccia drag-and-drop per creare pagine con blocchi riutilizzabili
+- **Sistema di Temi** - Design tokens configurabili per personalizzazione completa
+- **Multi-sito** - Gestisci più siti web da un'unica installazione
+- **11 Tipi di Blocchi** - Text, Heading, Image, Gallery, Video, HTML, Button, Divider, Spacer, Container, Columns
+- **API RESTful** - Backend API completo con autenticazione Sanctum
+- **Temi Predefiniti** - 3 temi professionali inclusi (Modern Light, Dark Mode, Minimal)
+- **Responsive** - Layout responsive con configurazioni per mobile/tablet/desktop
+- **SEO-Friendly** - Meta tags, slug personalizzabili, sitemap automatica
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack Tecnologico
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel 12, PHP 8.4
+- **Frontend:** Vue 3, Tailwind CSS 4.0, Vite
+- **Database:** MySQL 8+ / PostgreSQL / SQLite
+- **Autenticazione:** Laravel Sanctum
+- **Storage:** Local filesystem / S3-compatible
 
-## Learning Laravel
+## Installazione
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+# Clone repository
+git clone <repository-url>
+cd Simplio
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Install dependencies
+composer install
+npm install
 
-## Laravel Sponsors
+# Setup environment
+cp .env.example .env
+php artisan key:generate
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Configure database in .env
+DB_CONNECTION=mysql
+DB_DATABASE=simplio
+DB_USERNAME=root
+DB_PASSWORD=
 
-### Premium Partners
+# Run migrations and seeders
+php artisan migrate --seed
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# Build frontend
+npm run build
 
-## Contributing
+# Start server
+php artisan serve
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Visita `http://localhost:8000` nel browser.
 
-## Code of Conduct
+## Struttura del Progetto
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+app/
+├── Http/
+│   ├── Controllers/Api/    # API Controllers
+│   ├── Requests/           # Form Request Validation
+│   └── Middleware/         # Custom Middleware
+├── Models/                 # Eloquent Models
+│   ├── Site.php           # Siti web
+│   ├── Page.php           # Pagine
+│   ├── PageBlock.php      # Blocchi contenuto
+│   ├── Theme.php          # Temi
+│   └── Media.php          # File caricati
+├── Policies/              # Authorization Policies
+└── Services/              # Business Logic
+    ├── SiteService.php
+    ├── PageService.php
+    └── BlockService.php
 
-## Security Vulnerabilities
+database/
+├── migrations/            # Database schema
+└── seeders/
+    ├── ThemeSeeder.php   # Temi predefiniti
+    └── DatabaseSeeder.php
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+resources/
+├── js/
+│   ├── components/       # Vue 3 components
+│   └── app.js
+└── css/
+    └── app.css           # Tailwind CSS
 
-## License
+routes/
+├── api.php               # API routes
+└── web.php               # Web routes
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## API Documentation
+
+Vedi [API.md](API.md) per la documentazione completa delle API.
+
+### Endpoints Principali
+
+- `GET /api/sites` - Lista siti
+- `POST /api/sites` - Crea sito
+- `GET /api/sites/{id}/pages` - Lista pagine
+- `POST /api/sites/{id}/pages` - Crea pagina
+- `POST /api/pages/{id}/blocks` - Aggiungi blocco
+- `POST /api/blocks/reorder` - Riordina blocchi
+- `GET /api/themes` - Lista temi
+
+## Database Schema
+
+### Sites
+- Informazioni sito, dominio, tema, settings, stato pubblicazione
+
+### Pages
+- Titolo, slug, layout, SEO meta tags, template, ordinamento
+
+### PageBlocks
+- Tipo blocco, contenuto (JSON), proprietà stile, posizione grid, visibilità
+
+### Themes
+- Nome, design tokens (colors, typography, spacing, radius, shadows)
+
+### Media
+- File, path, disk, dimensioni, alt text, variants (thumbnails, webp)
+
+## Temi Predefiniti
+
+1. **Modern Light** - Design pulito con accenti blu
+2. **Dark Mode** - Tema scuro professionale
+3. **Minimal** - Focus sulla tipografia
+
+Ogni tema include design tokens per:
+- Colori (primary, secondary, accent, background, text)
+- Tipografia (font, dimensioni, pesi)
+- Spacing (xs, sm, md, lg, xl)
+- Border radius
+- Shadows
+
+## Sviluppo
+
+```bash
+# Development mode
+npm run dev
+php artisan serve
+
+# Run tests
+php artisan test
+
+# Code formatting
+./vendor/bin/pint
+
+# Clear cache
+php artisan optimize:clear
+```
+
+## Prossimi Step
+
+- [ ] Implementare autenticazione (login/register)
+- [ ] Completare page builder Vue 3
+- [ ] Aggiungere upload media con ottimizzazione
+- [ ] Implementare rendering pubblico pagine
+- [ ] Aggiungere cache layer (Redis)
+- [ ] Setup CI/CD pipeline
+- [ ] Sistema plugin/estensioni
+- [ ] Marketplace temi
+
+## Licenza
+
+MIT License
