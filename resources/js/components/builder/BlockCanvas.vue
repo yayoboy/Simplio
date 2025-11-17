@@ -87,8 +87,14 @@ import draggable from 'vuedraggable';
 import TextBlock from './blocks/TextBlock.vue';
 import HeadingBlock from './blocks/HeadingBlock.vue';
 import ImageBlock from './blocks/ImageBlock.vue';
+import GalleryBlock from './blocks/GalleryBlock.vue';
+import VideoBlock from './blocks/VideoBlock.vue';
+import HtmlBlock from './blocks/HtmlBlock.vue';
 import ButtonBlock from './blocks/ButtonBlock.vue';
 import DividerBlock from './blocks/DividerBlock.vue';
+import SpacerBlock from './blocks/SpacerBlock.vue';
+import ContainerBlock from './blocks/ContainerBlock.vue';
+import ColumnsBlock from './blocks/ColumnsBlock.vue';
 import PlaceholderBlock from './blocks/PlaceholderBlock.vue';
 
 const props = defineProps({
@@ -116,8 +122,14 @@ function getBlockComponent(type) {
     text: TextBlock,
     heading: HeadingBlock,
     image: ImageBlock,
+    gallery: GalleryBlock,
+    video: VideoBlock,
+    html: HtmlBlock,
     button: ButtonBlock,
     divider: DividerBlock,
+    spacer: SpacerBlock,
+    container: ContainerBlock,
+    columns: ColumnsBlock,
   };
   return components[type] || PlaceholderBlock;
 }

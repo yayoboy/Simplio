@@ -332,7 +332,256 @@ php artisan serve
 
 ---
 
-### 5. Dashboard Tests
+### 5. Page Builder Tests
+
+#### Open Page Builder
+- [ ] Navigate to a site detail page
+- [ ] Click "Builder" button on any page
+- [ ] Page Builder opens at `/sites/{siteId}/pages/{pageId}/builder`
+- [ ] Shows page title and site name in header
+- [ ] Three-column layout visible (Blocks Palette | Canvas | Properties)
+
+**Expected:** Page Builder interface loads
+
+#### Add Blocks from Palette
+- [ ] Palette shows all 11 block types organized by category
+- [ ] Categories: Content, Media, Interactive, Layout, Advanced
+- [ ] Click "Text Block" from palette
+- [ ] Text block appears in canvas
+- [ ] Block is automatically selected
+- [ ] Properties panel appears on right
+
+**Expected:** Blocks can be added and selected
+
+**API Call:** `POST /api/pages/{pageId}/blocks`
+
+#### Search Blocks
+- [ ] Type "button" in search box
+- [ ] Only Button block shown
+- [ ] Clear search
+- [ ] All blocks visible again
+
+**Expected:** Search filters blocks correctly
+
+#### Edit Block Content (Text Block)
+- [ ] Select a text block
+- [ ] Properties panel shows on right
+- [ ] Change text content in textarea
+- [ ] Change text alignment to "center"
+- [ ] Change font size to "large"
+- [ ] See changes reflected in canvas immediately
+
+**Expected:** Properties update block visually
+
+**API Call:** `PUT /api/pages/{pageId}/blocks/{id}` (debounced)
+
+#### Edit Heading Block
+- [ ] Add a Heading block
+- [ ] Change heading text
+- [ ] Change level from H2 to H1
+- [ ] Change alignment to "center"
+- [ ] See changes in canvas
+
+**Expected:** Heading properties work
+
+#### Edit Image Block
+- [ ] Add an Image block
+- [ ] Enter image URL in properties
+- [ ] Enter alt text
+- [ ] Enter caption
+- [ ] Change alignment
+- [ ] See image displayed in canvas
+
+**Expected:** Image block renders correctly
+
+#### Edit Button Block
+- [ ] Add a Button block
+- [ ] Change button text
+- [ ] Set link URL
+- [ ] Check "Open in new tab"
+- [ ] Change style (Primary, Secondary, Outline, Ghost)
+- [ ] Change size (Small, Medium, Large)
+- [ ] See button styled correctly
+
+**Expected:** Button properties work
+
+#### Edit Video Block
+- [ ] Add a Video block
+- [ ] Paste YouTube URL
+- [ ] Video embed appears
+- [ ] Change to Vimeo URL
+- [ ] Vimeo embed appears
+- [ ] Toggle autoplay
+- [ ] Change aspect ratio
+
+**Expected:** Video embeds work for YouTube and Vimeo
+
+#### Edit HTML Block
+- [ ] Add an HTML block
+- [ ] Enter custom HTML in properties
+- [ ] With sanitization enabled: warning shown
+- [ ] Disable sanitization
+- [ ] HTML renders in canvas
+- [ ] Re-enable sanitization
+
+**Expected:** HTML block with sanitization toggle
+
+#### Edit Spacer Block
+- [ ] Add a Spacer block
+- [ ] Change height to "5rem"
+- [ ] See visual indicator on hover
+- [ ] Height changes reflected
+
+**Expected:** Spacer creates vertical space
+
+#### Edit Divider Block
+- [ ] Add a Divider block
+- [ ] Change style (Solid, Dashed, Dotted)
+- [ ] Change color using color picker
+- [ ] Change thickness
+- [ ] Change spacing
+- [ ] See divider styled correctly
+
+**Expected:** Divider properties work
+
+#### Edit Gallery Block
+- [ ] Add a Gallery block
+- [ ] Change number of columns (2, 3, 4, 5)
+- [ ] Change gap size
+- [ ] Change aspect ratio
+- [ ] See "No images" empty state
+
+**Expected:** Gallery properties update grid layout
+
+**Note:** Image upload via Media Manager not yet implemented
+
+#### Edit Container Block
+- [ ] Add a Container block
+- [ ] Change max width
+- [ ] Change padding
+- [ ] Change background color
+- [ ] See "Nested blocks coming soon" message
+
+**Expected:** Container properties work (nested blocks not yet implemented)
+
+#### Edit Columns Block
+- [ ] Add a Columns block
+- [ ] Change number of columns (2, 3, 4)
+- [ ] Change gap
+- [ ] Change vertical alignment
+- [ ] See columns layout update
+
+**Expected:** Columns properties work (nested blocks not yet implemented)
+
+#### Reorder Blocks with Drag-and-Drop
+- [ ] Add multiple blocks to canvas
+- [ ] Hover over a block
+- [ ] Block toolbar appears with drag handle
+- [ ] Drag block using drag handle
+- [ ] Drop in new position
+- [ ] Blocks reorder correctly
+
+**Expected:** Drag-and-drop reordering works
+
+**API Call:** `POST /api/blocks/reorder`
+
+#### Block Visibility Toggle
+- [ ] Select a block
+- [ ] Click eye icon in toolbar
+- [ ] Block becomes semi-transparent
+- [ ] Icon changes to "eye-off"
+- [ ] Click again
+- [ ] Block becomes fully visible
+
+**Expected:** Visibility toggle works
+
+**API Call:** `PUT /api/pages/{pageId}/blocks/{id}`
+
+#### Duplicate Block
+- [ ] Select a block with content
+- [ ] Click duplicate icon in toolbar
+- [ ] Duplicate appears below original
+- [ ] Duplicate has same content
+- [ ] Duplicate has "(Copy)" suffix
+
+**Expected:** Block duplicated with content
+
+**API Call:** `POST /api/pages/{pageId}/blocks` (create with copied data)
+
+#### Delete Block
+- [ ] Click delete icon on a block
+- [ ] Confirmation dialog appears
+- [ ] Confirm deletion
+- [ ] Block removed from canvas
+- [ ] Properties panel closes if it was selected
+
+**Expected:** Block deleted with confirmation
+
+**API Call:** `DELETE /api/pages/{pageId}/blocks/{id}`
+
+#### Deselect Block
+- [ ] Select a block (properties panel opens)
+- [ ] Click X button in properties panel header
+- [ ] Properties panel closes
+- [ ] Block deselected (no blue border)
+
+**Expected:** Block can be deselected
+
+#### Responsive Preview Modes
+- [ ] Click "Desktop" button in header
+- [ ] Canvas is wide (max-w-7xl)
+- [ ] Click "Tablet" button
+- [ ] Canvas shrinks to tablet size (max-w-3xl)
+- [ ] Click "Mobile" button
+- [ ] Canvas shrinks to mobile size (max-w-md)
+- [ ] Switch back to Desktop
+
+**Expected:** Preview modes change canvas width
+
+#### Save Functionality
+- [ ] Make changes to blocks
+- [ ] "Save" button becomes enabled
+- [ ] Click "Save"
+- [ ] Button shows "Saving..."
+- [ ] After save, button disabled again
+- [ ] Unsaved changes flag cleared
+
+**Expected:** Save button tracks changes
+
+**Note:** Currently auto-saves via API, Save button just clears unsaved flag
+
+#### Unsaved Changes Warning
+- [ ] Make changes to a block
+- [ ] Click browser back button
+- [ ] Confirmation dialog appears
+- [ ] Cancel
+- [ ] Stay on page
+- [ ] Click back again
+- [ ] Confirm
+- [ ] Navigate away
+
+**Expected:** Warning before leaving with unsaved changes
+
+#### Empty State
+- [ ] Open Page Builder on a page with no blocks
+- [ ] Empty state message shown
+- [ ] "Click on blocks from the left sidebar" instruction
+- [ ] SVG icon displayed
+
+**Expected:** Proper empty state
+
+#### Loading State
+- [ ] Open Page Builder
+- [ ] While blocks loading, see "Loading blocks..."
+- [ ] After load, blocks displayed
+
+**Expected:** Loading state shown during fetch
+
+**API Call:** `GET /api/pages/{pageId}/blocks`
+
+---
+
+### 6. Dashboard Tests
 
 #### View Dashboard
 - [ ] Navigate to `/`
@@ -463,6 +712,13 @@ php artisan serve
   - POST /api/pages/{id}/unpublish
   - POST /api/pages/{id}/duplicate
   - POST /api/pages/{id}/set-home
+- [ ] Perform operations on Blocks in Page Builder
+- [ ] Verify correct API calls:
+  - GET /api/pages/{pageId}/blocks (load blocks)
+  - POST /api/pages/{pageId}/blocks (create block)
+  - PUT /api/pages/{pageId}/blocks/{id} (update block)
+  - DELETE /api/pages/{pageId}/blocks/{id} (delete block)
+  - POST /api/blocks/reorder (reorder blocks)
 
 **Expected:** All API calls return 200/201/204 status
 
@@ -518,23 +774,48 @@ After completing all tests:
 ✅ Can publish/unpublish pages
 ✅ Can duplicate pages
 ✅ Can set page as home (only one home page per site)
+✅ Page Builder opens and displays correctly
+✅ Can add all 11 block types from palette
+✅ Can edit block properties in real-time
+✅ Can reorder blocks with drag-and-drop
+✅ Can duplicate blocks
+✅ Can toggle block visibility
+✅ Can delete blocks with confirmation
+✅ Responsive preview modes (desktop/tablet/mobile) work
+✅ Save functionality tracks unsaved changes
+✅ Warning before leaving with unsaved changes
+✅ All block types render correctly:
+  - Text Block with formatting options
+  - Heading Block (H1-H6)
+  - Image Block with caption
+  - Gallery Block with grid layout
+  - Video Block (YouTube/Vimeo embeds)
+  - HTML Block with sanitization
+  - Button Block with variants
+  - Divider Block with styles
+  - Spacer Block with adjustable height
+  - Container Block (nested blocks coming soon)
+  - Columns Block (nested blocks coming soon)
 ✅ UI updates reactively
 ✅ Loading states work
 ✅ Error handling works
 ✅ Responsive design works
 ✅ All API calls succeed
-✅ Pinia stores (sites & pages) update correctly
+✅ Pinia stores (sites, pages & blocks) update correctly
 
 ---
 
 ## 🚀 Next Features to Test (When Implemented)
 
-- [ ] Pages management (create, edit, delete pages)
-- [ ] Page builder (drag-and-drop blocks)
-- [ ] Media upload and management
-- [ ] Theme customization
-- [ ] Site preview
+- [ ] Media Manager (upload and manage images/files)
+- [ ] Public page rendering (view published pages)
+- [ ] Theme customization interface
+- [ ] Site preview and live editing
+- [ ] Nested blocks for Container and Columns
+- [ ] Block templates and presets
 - [ ] Multi-language support
+- [ ] SEO optimization tools
+- [ ] Analytics integration
 
 ---
 

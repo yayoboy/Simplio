@@ -227,6 +227,193 @@
         </div>
       </template>
 
+      <!-- Gallery Block Properties -->
+      <template v-else-if="block.type === 'gallery'">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Columns</label>
+          <select v-model.number="localProperties.columns" @change="updateProperties" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <option :value="2">2 Columns</option>
+            <option :value="3">3 Columns</option>
+            <option :value="4">4 Columns</option>
+            <option :value="5">5 Columns</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Gap</label>
+          <select v-model="localProperties.gap" @change="updateProperties" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <option value="0.5rem">Small (0.5rem)</option>
+            <option value="1rem">Medium (1rem)</option>
+            <option value="1.5rem">Large (1.5rem)</option>
+            <option value="2rem">Extra Large (2rem)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Aspect Ratio</label>
+          <select v-model="localProperties.aspectRatio" @change="updateProperties" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <option value="16/9">16:9</option>
+            <option value="4/3">4:3</option>
+            <option value="1/1">1:1 (Square)</option>
+          </select>
+        </div>
+        <div class="pt-2">
+          <p class="text-xs text-gray-500">Note: Images managed via Media Manager (coming soon)</p>
+        </div>
+      </template>
+
+      <!-- Video Block Properties -->
+      <template v-else-if="block.type === 'video'">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Video URL</label>
+          <input
+            v-model="localContent.url"
+            type="text"
+            placeholder="https://youtube.com/watch?v=..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="debouncedUpdate"
+          />
+          <p class="mt-1 text-xs text-gray-500">YouTube or Vimeo URL</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Provider</label>
+          <select v-model="localContent.provider" @change="updateContent" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <option value="youtube">YouTube</option>
+            <option value="vimeo">Vimeo</option>
+          </select>
+        </div>
+        <div class="flex items-center">
+          <input
+            v-model="localContent.autoplay"
+            type="checkbox"
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            @change="updateContent"
+          />
+          <label class="ml-2 block text-sm text-gray-700">Autoplay</label>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Aspect Ratio</label>
+          <select v-model="localProperties.aspectRatio" @change="updateProperties" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <option value="16/9">16:9</option>
+            <option value="4/3">4:3</option>
+            <option value="1/1">1:1 (Square)</option>
+          </select>
+        </div>
+      </template>
+
+      <!-- HTML Block Properties -->
+      <template v-else-if="block.type === 'html'">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">HTML Code</label>
+          <textarea
+            v-model="localContent.html"
+            rows="8"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="<div>Your HTML here</div>"
+            @input="debouncedUpdate"
+          ></textarea>
+        </div>
+        <div class="flex items-center bg-yellow-50 border border-yellow-200 rounded p-3">
+          <input
+            v-model="localProperties.sanitize"
+            type="checkbox"
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            @change="updateProperties"
+          />
+          <label class="ml-2 block text-sm text-gray-700">
+            Sanitize HTML (recommended for security)
+          </label>
+        </div>
+        <div class="text-xs text-gray-500 bg-gray-50 rounded p-2">
+          <strong>⚠️ Warning:</strong> Disabling sanitization may expose your site to XSS attacks. Only disable if you trust the HTML source.
+        </div>
+      </template>
+
+      <!-- Spacer Block Properties -->
+      <template v-else-if="block.type === 'spacer'">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Height</label>
+          <input
+            v-model="localProperties.height"
+            type="text"
+            placeholder="2rem"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="debouncedUpdateProperties"
+          />
+          <p class="mt-1 text-xs text-gray-500">Use CSS units: px, rem, em, vh, etc.</p>
+        </div>
+        <div class="text-xs text-gray-500 bg-gray-50 rounded p-2">
+          <strong>Examples:</strong> 1rem, 2rem, 50px, 10vh
+        </div>
+      </template>
+
+      <!-- Container Block Properties -->
+      <template v-else-if="block.type === 'container'">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Max Width</label>
+          <input
+            v-model="localProperties.maxWidth"
+            type="text"
+            placeholder="1200px"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="debouncedUpdateProperties"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Padding</label>
+          <input
+            v-model="localProperties.padding"
+            type="text"
+            placeholder="1rem"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="debouncedUpdateProperties"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
+          <input
+            v-model="localProperties.backgroundColor"
+            type="color"
+            class="w-full h-10 px-1 py-1 border border-gray-300 rounded-md"
+            @input="updateProperties"
+          />
+        </div>
+        <div class="text-xs text-gray-500 bg-blue-50 rounded p-2">
+          <strong>Note:</strong> Nested blocks feature coming soon
+        </div>
+      </template>
+
+      <!-- Columns Block Properties -->
+      <template v-else-if="block.type === 'columns'">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Number of Columns</label>
+          <select v-model.number="columnsCount" @change="updateColumnsCount" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <option :value="2">2 Columns</option>
+            <option :value="3">3 Columns</option>
+            <option :value="4">4 Columns</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Gap</label>
+          <input
+            v-model="localProperties.gap"
+            type="text"
+            placeholder="1rem"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @input="debouncedUpdateProperties"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Vertical Align</label>
+          <select v-model="localProperties.verticalAlign" @change="updateProperties" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+            <option value="top">Top</option>
+            <option value="center">Center</option>
+            <option value="bottom">Bottom</option>
+          </select>
+        </div>
+        <div class="text-xs text-gray-500 bg-blue-50 rounded p-2">
+          <strong>Note:</strong> Nested blocks feature coming soon
+        </div>
+      </template>
+
       <!-- Fallback for other types -->
       <template v-else>
         <div class="text-center py-8">
@@ -252,6 +439,7 @@ const emit = defineEmits(['update']);
 
 const localContent = ref({ ...props.block.content });
 const localProperties = ref({ ...props.block.properties });
+const columnsCount = ref(props.block.content?.columns?.length || 2);
 
 // Watch for external changes
 watch(() => props.block, (newBlock) => {
@@ -284,5 +472,14 @@ function updateProperties() {
   emit('update', {
     properties: localProperties.value,
   });
+}
+
+function updateColumnsCount() {
+  const newColumns = Array.from({ length: columnsCount.value }, (_, i) => ({
+    blocks: localContent.value.columns?.[i]?.blocks || [],
+    width: `${100 / columnsCount.value}%`,
+  }));
+  localContent.value.columns = newColumns;
+  updateContent();
 }
 </script>
