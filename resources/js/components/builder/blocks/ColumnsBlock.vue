@@ -17,7 +17,7 @@
         </div>
         <div v-else class="text-center py-6">
           <p class="text-xs text-gray-400">Column {{ index + 1 }}</p>
-          <p class="text-xs text-gray-400 mt-1">Empty</p>
+          <p class="text-xs text-gray-400 mt-1">Drag blocks here</p>
         </div>
       </div>
     </div>

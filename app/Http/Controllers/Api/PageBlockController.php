@@ -25,7 +25,12 @@ class PageBlockController extends Controller
     {
         $this->authorize('view', $page);
 
-        $blocks = $page->blocks()->ordered()->get();
+        // Get only root-level blocks (no parent), and load their children recursively
+        $blocks = $page->blocks()
+            ->whereNull('parent_id')
+            ->with('children')
+            ->ordered()
+            ->get();
 
         return response()->json($blocks);
     }

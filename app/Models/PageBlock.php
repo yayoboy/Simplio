@@ -65,6 +65,16 @@ class PageBlock extends Model
         return $this->belongsTo(Page::class);
     }
 
+    public function parent()
+    {
+        return $this->belongsTo(PageBlock::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(PageBlock::class, 'parent_id')->ordered();
+    }
+
     // Scopes
     public function scopeVisible($query)
     {
