@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PageBlockController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\SiteController;
@@ -8,7 +9,14 @@ use App\Http\Controllers\Api\ThemeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Authentication routes (public)
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
 Route::middleware('auth:sanctum')->group(function () {
+    // Auth user
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
