@@ -102,6 +102,15 @@
                       </svg>
                     </button>
 
+                    <!-- Page Builder Button -->
+                    <button
+                      @click="openBuilder(page)"
+                      class="px-3 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200"
+                      title="Open Page Builder"
+                    >
+                      Builder
+                    </button>
+
                     <!-- Publish/Unpublish Button -->
                     <button
                       @click="handleTogglePublish(page)"
@@ -208,13 +217,14 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useSitesStore } from '@/stores/sites';
 import { usePagesStore } from '@/stores/pages';
 import Modal from '@/components/ui/Modal.vue';
 import PageForm from '@/components/pages/PageForm.vue';
 
 const route = useRoute();
+const router = useRouter();
 const sitesStore = useSitesStore();
 const pagesStore = usePagesStore();
 
@@ -344,6 +354,16 @@ async function handleSetAsHome(page) {
   } catch (error) {
     console.error('Failed to set page as home:', error);
   }
+}
+
+function openBuilder(page) {
+  router.push({
+    name: 'page-builder',
+    params: {
+      siteId: siteId.value,
+      pageId: page.id
+    }
+  });
 }
 
 onMounted(() => {
