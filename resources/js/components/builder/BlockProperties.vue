@@ -73,14 +73,22 @@
       <!-- Image Block Properties -->
       <template v-else-if="block.type === 'image'">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-          <input
-            v-model="localContent.src"
-            type="text"
-            placeholder="https://example.com/image.jpg"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            @input="debouncedUpdate"
-          />
+          <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
+          <div class="flex gap-2">
+            <input
+              v-model="localContent.src"
+              type="text"
+              placeholder="https://example.com/image.jpg"
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              @input="debouncedUpdate"
+            />
+            <button
+              @click="openMediaPicker('image')"
+              class="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors"
+            >
+              Browse
+            </button>
+          </div>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Alt Text</label>
@@ -255,8 +263,34 @@
             <option value="1/1">1:1 (Square)</option>
           </select>
         </div>
-        <div class="pt-2">
-          <p class="text-xs text-gray-500">Note: Images managed via Media Manager (coming soon)</p>
+        <div class="pt-2 border-t">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">Images ({{ (localContent.images || []).length }})</label>
+            <button
+              @click="openMediaPicker('gallery')"
+              class="px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs hover:bg-blue-700 transition-colors"
+            >
+              Add Images
+            </button>
+          </div>
+          <div v-if="localContent.images && localContent.images.length > 0" class="grid grid-cols-3 gap-2 mt-2">
+            <div
+              v-for="(image, index) in localContent.images"
+              :key="index"
+              class="relative aspect-square bg-gray-100 rounded overflow-hidden group"
+            >
+              <img :src="image.src || image" :alt="image.alt || ''" class="w-full h-full object-cover" />
+              <button
+                @click="removeGalleryImage(index)"
+                class="absolute top-1 right-1 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <p v-else class="text-xs text-gray-500 mt-2">No images added yet</p>
         </div>
       </template>
 
@@ -421,12 +455,24 @@
         </div>
       </template>
     </div>
+
+    <!-- Media Picker Modal -->
+    <MediaPicker
+      :is-open="showMediaPicker"
+      :site-id="siteId"
+      :multiple="mediaPickerMode === 'gallery'"
+      :accept="mediaPickerMode === 'image' ? 'images' : 'all'"
+      @close="showMediaPicker = false"
+      @select="handleMediaSelect"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { getBlockConfig } from '@/config/blockTypes';
+import MediaPicker from '@/components/media/MediaPicker.vue';
 
 const props = defineProps({
   block: {
@@ -437,9 +483,16 @@ const props = defineProps({
 
 const emit = defineEmits(['update']);
 
+const route = useRoute();
+const siteId = computed(() => route.params.siteId || route.params.id);
+
 const localContent = ref({ ...props.block.content });
 const localProperties = ref({ ...props.block.properties });
 const columnsCount = ref(props.block.content?.columns?.length || 2);
+
+// Media Picker state
+const showMediaPicker = ref(false);
+const mediaPickerMode = ref('image'); // 'image' or 'gallery'
 
 // Watch for external changes
 watch(() => props.block, (newBlock) => {
@@ -481,5 +534,42 @@ function updateColumnsCount() {
   }));
   localContent.value.columns = newColumns;
   updateContent();
+}
+
+// Media Picker functions
+function openMediaPicker(mode) {
+  mediaPickerMode.value = mode;
+  showMediaPicker.value = true;
+}
+
+function handleMediaSelect(selected) {
+  if (mediaPickerMode.value === 'image') {
+    // Single image for Image block
+    localContent.value.src = selected.url;
+    localContent.value.alt = selected.alt_text || selected.original_filename;
+    localContent.value.caption = selected.caption || '';
+    updateContent();
+  } else if (mediaPickerMode.value === 'gallery') {
+    // Multiple images for Gallery block
+    const newImages = Array.isArray(selected) ? selected : [selected];
+    const formattedImages = newImages.map((media) => ({
+      src: media.url,
+      alt: media.alt_text || media.original_filename,
+      caption: media.caption || '',
+    }));
+
+    if (!localContent.value.images) {
+      localContent.value.images = [];
+    }
+    localContent.value.images.push(...formattedImages);
+    updateContent();
+  }
+}
+
+function removeGalleryImage(index) {
+  if (localContent.value.images) {
+    localContent.value.images.splice(index, 1);
+    updateContent();
+  }
 }
 </script>
