@@ -39,6 +39,11 @@ const routes = [
         name: 'page-builder',
         component: () => import('../views/pages/PageBuilder.vue'),
       },
+      {
+        path: 'sites/:siteId/media',
+        name: 'media-library',
+        component: () => import('../views/media/MediaLibrary.vue'),
+      },
     ],
   },
 ];
